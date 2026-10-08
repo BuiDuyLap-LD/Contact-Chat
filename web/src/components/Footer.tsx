@@ -1,21 +1,23 @@
+'use client'
+
 import Link from 'next/link'
-import { Mail, Phone, Zap, ArrowUpRight, Globe, Share2 } from 'lucide-react'
+import { Zap, ArrowUpRight, MessageSquare, ShieldCheck, Clock } from 'lucide-react'
 
 const footerLinks = [
   {
-    title: 'Trang',
+    title: 'Khám Phá',
     links: [
       { label: 'Trang Chủ', href: '/' },
+      { label: 'Dịch Vụ & Báo Giá', href: '/services' },
+      { label: 'Dự Án Đã Làm', href: '/portfolio' },
       { label: 'Về Tôi', href: '/about' },
-      { label: 'Dịch Vụ & Giá', href: '/services' },
-      { label: 'Portfolio', href: '/portfolio' },
     ],
   },
   {
-    title: 'Liên Kết',
+    title: 'Hỗ Trợ & Tương Tác',
     links: [
-      { label: 'Liên Hệ', href: '/contact' },
-      { label: 'Chat AI', href: '/chat' },
+      { label: 'Trợ Lý AI 24/7', href: '/chat' },
+      { label: 'Gửi Yêu Cầu Dự Án', href: '/contact' },
     ],
   },
 ]
@@ -26,27 +28,29 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: 'var(--bg-surface)',
-        borderTop: '1px solid var(--border)',
-        paddingTop: '60px',
-        paddingBottom: '32px',
+        background: 'rgba(5, 7, 14, 0.95)',
+        borderTop: '1px solid rgba(99, 102, 241, 0.2)',
+        paddingTop: '64px',
+        paddingBottom: '36px',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
       <div className="section-container">
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
             gap: '48px',
             marginBottom: '48px',
           }}
         >
           {/* Brand */}
-          <div>
+          <div style={{ maxWidth: '320px' }}>
             <Link
               href="/"
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
                 textDecoration: 'none',
@@ -62,6 +66,7 @@ export default function Footer() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  boxShadow: '0 0 15px rgba(99, 102, 241, 0.5)',
                 }}
               >
                 <Zap size={18} color="white" />
@@ -71,56 +76,29 @@ export default function Footer() {
                   fontFamily: 'Syne, sans-serif',
                   fontWeight: 800,
                   fontSize: '20px',
-                  background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
+                  color: 'white',
                 }}
               >
-                BizAI
+                BizAI<span style={{ color: '#06b6d4' }}>.</span>
               </span>
             </Link>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.7', maxWidth: '260px' }}>
-              Giải pháp công nghệ hiện đại cho doanh nghiệp của bạn. AI Chat hỗ trợ 24/7.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.7', marginBottom: '20px' }}>
+              Nền tảng kiến trúc giải pháp số & chuyển đổi công nghệ. Tối ưu thời gian đưa sản phẩm ra thị trường với chi phí minh bạch.
             </p>
 
-            {/* Social Links */}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              {[
-                { icon: Globe, href: '#', label: 'Website' },
-                { icon: Share2, href: '#', label: 'Mạng xã hội' },
-              ].map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  style={{
-                    width: '38px',
-                    height: '38px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(99, 102, 241, 0.1)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '10px',
-                    color: 'var(--text-secondary)',
-                    transition: 'all 0.2s ease',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#10b981' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
+              Trợ lý AI sẵn sàng tư vấn 24/7
             </div>
           </div>
 
           {/* Nav Links */}
           {footerLinks.map((group) => (
             <div key={group.title}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {group.title}
               </h4>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {group.links.map((link) => (
                   <li key={link.href}>
                     <Link
@@ -130,10 +108,9 @@ export default function Footer() {
                         textDecoration: 'none',
                         fontSize: '14px',
                         transition: 'color 0.2s ease',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
                       }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#c7d2fe')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
                     >
                       {link.label}
                     </Link>
@@ -143,69 +120,38 @@ export default function Footer() {
             </div>
           ))}
 
-          {/* Contact */}
+          {/* Quick Consultation CTA */}
           <div>
-            <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
-              Liên Hệ
+            <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Kết Nối & Tư Vấn
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <a
-                href="mailto:email@example.com"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  color: 'var(--text-secondary)',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  transition: 'color 0.2s ease',
-                }}
-              >
-                <Mail size={15} style={{ color: 'var(--primary)' }} />
-                email@example.com
-              </a>
-              <a
-                href="tel:+84xxxxxxxxx"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  color: 'var(--text-secondary)',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  transition: 'color 0.2s ease',
-                }}
-              >
-                <Phone size={15} style={{ color: 'var(--primary)' }} />
-                +84 xxx xxx xxx
-              </a>
-            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6, marginBottom: '16px' }}>
+              Bạn có câu hỏi về ý tưởng kinh doanh hoặc cần ước tính chi phí sơ bộ? Hãy trò chuyện trực tiếp với Trợ lý AI hoặc gửi form yêu cầu.
+            </p>
 
-            <Link
-              href="/contact"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                marginTop: '20px',
-                padding: '10px 20px',
-                background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-                color: 'white',
-                borderRadius: '10px',
-                textDecoration: 'none',
-                fontSize: '14px',
-                fontWeight: 600,
-                transition: 'opacity 0.2s ease',
-              }}
-            >
-              Liên Hệ Ngay
-              <ArrowUpRight size={15} />
-            </Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Link
+                href="/chat"
+                className="btn-primary"
+                style={{ padding: '10px 18px', fontSize: '13px', justifyContent: 'center' }}
+              >
+                <MessageSquare size={15} />
+                Mở Trợ Lý AI Chat
+              </Link>
+              <Link
+                href="/contact"
+                className="btn-secondary"
+                style={{ padding: '10px 18px', fontSize: '13px', justifyContent: 'center' }}
+              >
+                Gửi Yêu Cầu Dự Án
+                <ArrowUpRight size={15} />
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ height: '1px', background: 'var(--border)', marginBottom: '24px' }} />
+        <div style={{ height: '1px', background: 'rgba(99, 102, 241, 0.15)', marginBottom: '24px' }} />
 
         {/* Bottom */}
         <div
@@ -218,11 +164,16 @@ export default function Footer() {
           }}
         >
           <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-            © {year} BizAI Portfolio. All rights reserved.
+            © {year} BizAI Platform. Toàn bộ mã nguồn bàn giao độc quyền.
           </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-            Powered by Next.js + Supabase + Gemini AI
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ShieldCheck size={14} style={{ color: '#10b981' }} /> Cam kết bảo mật NDA
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Clock size={14} style={{ color: '#818cf8' }} /> Phản hồi trong 2 giờ
+            </span>
+          </div>
         </div>
       </div>
     </footer>

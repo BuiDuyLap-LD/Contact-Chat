@@ -29,20 +29,21 @@ export default function AdminSidebar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '32px' }}>
         <div
           style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
+            width: '38px',
+            height: '38px',
+            borderRadius: '12px',
             background: 'linear-gradient(135deg, #6366f1, #a855f7)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            boxShadow: '0 0 15px rgba(99, 102, 241, 0.5)',
           }}
         >
           <Zap size={18} color="white" />
         </div>
         <div>
           <div style={{ fontWeight: 800, fontSize: '17px', color: '#f8fafc' }}>BizAI Admin</div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Hệ Thống Quản Trị</div>
+          <div style={{ fontSize: '11px', color: '#10b981' }}>Hệ Thống Trực Tuyến</div>
         </div>
       </div>
 
@@ -60,17 +61,17 @@ export default function AdminSidebar() {
                 alignItems: 'center',
                 gap: '12px',
                 padding: '12px 14px',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 fontSize: '14px',
-                fontWeight: 500,
+                fontWeight: 600,
                 textDecoration: 'none',
                 color: isActive ? '#f8fafc' : 'var(--text-secondary)',
-                background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-                border: isActive ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                background: isActive ? 'rgba(99, 102, 241, 0.18)' : 'transparent',
+                border: isActive ? '1px solid rgba(99, 102, 241, 0.35)' : '1px solid transparent',
                 transition: 'all 0.2s ease',
               }}
             >
-              <Icon size={18} style={{ color: isActive ? '#818cf8' : 'var(--text-muted)' }} />
+              <Icon size={18} style={{ color: isActive ? '#a5b4fc' : 'var(--text-muted)' }} />
               {item.label}
             </Link>
           )
@@ -80,22 +81,29 @@ export default function AdminSidebar() {
       {/* Quick link to Web */}
       <div style={{ paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
         <a
-          href="http://localhost:3000"
-          target="_blank"
-          rel="noreferrer"
+          href="/"
+          onClick={(e) => {
+            // Nếu chạy trên localhost nhảy về 3000, nếu trên Vercel mở trang web chính
+            if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+              window.open('http://localhost:3000', '_blank')
+              e.preventDefault()
+            }
+          }}
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '10px 14px',
+            padding: '12px 14px',
             borderRadius: '10px',
             background: 'rgba(255,255,255,0.03)',
+            border: '1px solid var(--border)',
             color: 'var(--text-secondary)',
             fontSize: '13px',
+            fontWeight: 600,
             textDecoration: 'none',
           }}
         >
-          <span>Xem Trang Web Chính</span>
+          <span>Mở Website Khách Hàng</span>
           <ExternalLink size={14} />
         </a>
       </div>

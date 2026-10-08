@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Inbox, Mail, Phone, Calendar, Check, MessageSquare, Trash2, Filter } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Inbox, Mail, Phone, Calendar, Check, MessageSquare, Trash2, Filter, RefreshCw } from 'lucide-react'
 
 interface Inquiry {
   id: string
@@ -16,55 +17,92 @@ interface Inquiry {
   notes?: string
 }
 
-const mockInquiries: Inquiry[] = [
-  {
-    id: '1',
-    name: 'Trần Minh Khang',
-    email: 'khang.tran@startup.vn',
-    phone: '0988 123 456',
-    service: 'Web Application & SaaS',
-    budget: '25.000.000đ',
-    message: 'Tôi có ý tưởng xây dựng nền tảng học trực tuyến kết hợp AI tự động tạo quiz trắc nghiệm. Cần tư vấn kiến trúc công nghệ và lộ trình MVP.',
-    status: 'new',
-    created_at: '08/10/2026, 08:30',
-  },
-  {
-    id: '2',
-    name: 'Lê Hoàng Yến',
-    email: 'yen.le@beautyco.com',
-    phone: '0912 888 999',
-    service: 'Landing Page & Web Doanh Nghiệp',
-    budget: '< 10.000.000đ',
-    message: 'Bên mình muốn làm lại trang chủ giới thiệu mỹ phẩm, cần thiết kế sang trọng phong cách tối giản và tốc độ nhanh.',
-    status: 'read',
-    created_at: '07/10/2026, 16:45',
-  },
-  {
-    id: '3',
-    name: 'Vũ Đức Nam',
-    email: 'nam.vu@logistics.vn',
-    phone: '0903 555 777',
-    service: 'Giải Pháp AI & Chatbot',
-    budget: '15.000.000đ',
-    message: 'Cần tích hợp Chatbot AI vào website hiện có để hỗ trợ khách tra cứu mã vận đơn và báo cước tự động.',
-    status: 'replied',
-    created_at: '06/10/2026, 11:20',
-    notes: 'Đã gọi điện tư vấn lúc 14:00 ngày 06/10. Khách đang duyệt báo giá.',
-  },
-]
-
 export default function InquiriesPage() {
-  const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries)
-  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(mockInquiries[0])
+  const [inquiries, setInquiries] = useState<Inquiry[]>([])
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
   const [filter, setFilter] = useState<'all' | 'new' | 'read' | 'replied'>('all')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const updateStatus = (id: string, newStatus: 'new' | 'read' | 'replied') => {
+  const loadData = async () => {
+    setIsLoading(true)
+    let list: Inquiry[] = []
+
+    // 1. Lấy từ Supabase nếu có
+    try {
+      const supabase = createClient()
+      const { data: dbData } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false })
+      if (dbData && dbData.length > 0) {
+        list = dbData.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          email: d.email,
+          phone: d.phone || 'Chưa cung cấp',
+          service: d.message?.startsWith('[Dịch vụ quan tâm:') ? d.message.split(']')[0].replace('[Dịch vụ quan tâm:', '').trim() : 'Tư vấn dự án',
+          budget: d.budget || 'Thoả thuận',
+          message: d.message?.includes(']') ? d.message.split(']').slice(1).join(']').trim() : d.message,
+          status: d.status || 'new',
+          created_at: new Date(d.created_at).toLocaleString('vi-VN'),
+        }))
+      }
+    } catch {}
+
+    // 2. Kết hợp với LocalStorage (nếu có khách mới gửi ở máy)
+    try {
+      const local = JSON.parse(localStorage.getItem('bizai_local_inquiries') || '[]')
+      if (local && local.length > 0) {
+        // Gộp tránh trùng id
+        const existingIds = new Set(list.map((i) => i.id))
+        const newLocal = local.filter((l: any) => !existingIds.has(l.id))
+        list = [...newLocal, ...list]
+      }
+    } catch {}
+
+    // 3. Nếu chưa có gì, tạo một số mục mẫu để admin kiểm tra giao diện
+    if (list.length === 0) {
+      list = [
+        {
+          id: 'demo-1',
+          name: 'Khách Hàng Trải Nghiệm Mẫu',
+          email: 'khachhang@doanhnghiep.vn',
+          phone: '0988 123 456',
+          service: 'Web Application & SaaS',
+          budget: '25.000.000đ',
+          message: 'Tôi đang có ý tưởng kinh doanh muốn làm MVP nền tảng web kết hợp chatbot AI tư vấn tự động.',
+          status: 'new',
+          created_at: 'Vừa xong',
+        },
+      ]
+    }
+
+    setInquiries(list)
+    setSelectedInquiry(list[0] || null)
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const updateStatus = async (id: string, newStatus: 'new' | 'read' | 'replied') => {
     setInquiries((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
     )
     if (selectedInquiry && selectedInquiry.id === id) {
-      setSelectedInquiry((prev) => prev ? { ...prev, status: newStatus } : null)
+      setSelectedInquiry((prev) => (prev ? { ...prev, status: newStatus } : null))
     }
+
+    // Cập nhật Supabase nếu có
+    try {
+      const supabase = createClient()
+      await supabase.from('inquiries').update({ status: newStatus }).eq('id', id)
+    } catch {}
+
+    // Cập nhật LocalStorage
+    try {
+      const local = JSON.parse(localStorage.getItem('bizai_local_inquiries') || '[]')
+      const updated = local.map((l: any) => (l.id === id ? { ...l, status: newStatus } : l))
+      localStorage.setItem('bizai_local_inquiries', JSON.stringify(updated))
+    } catch {}
   }
 
   const filtered = inquiries.filter((inq) => {
@@ -74,11 +112,22 @@ export default function InquiriesPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, marginBottom: '6px' }}>Quản Lý Phản Hồi & Khách Hàng</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-          Xem chi tiết các yêu cầu tư vấn gửi từ biểu mẫu trên website và cập nhật tiến trình liên hệ.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+        <div>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, marginBottom: '6px' }}>Quản Lý Phản Hồi & Khách Hàng</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+            Theo dõi tất cả yêu cầu tư vấn gửi từ biểu mẫu trên trang web khách hàng.
+          </p>
+        </div>
+        <button
+          onClick={loadData}
+          disabled={isLoading}
+          className="btn-admin"
+          style={{ fontSize: '13px', padding: '8px 16px' }}
+        >
+          <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+          Làm mới danh sách
+        </button>
       </div>
 
       {/* Filter Tabs */}
@@ -111,35 +160,41 @@ export default function InquiriesPage() {
         
         {/* Left: List */}
         <div className="admin-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {filtered.map((item) => {
-            const isSelected = selectedInquiry?.id === item.id
-            return (
-              <div
-                key={item.id}
-                onClick={() => setSelectedInquiry(item)}
-                style={{
-                  padding: '16px',
-                  borderRadius: '10px',
-                  background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                  border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '15px' }}>{item.name}</div>
-                  <span className={`admin-badge badge-${item.status}`}>
-                    {item.status === 'new' ? 'Mới' : item.status === 'read' ? 'Đã xem' : 'Đã phản hồi'}
-                  </span>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
+              Chưa có yêu cầu nào trong mục này.
+            </div>
+          ) : (
+            filtered.map((item) => {
+              const isSelected = selectedInquiry?.id === item.id
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedInquiry(item)}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    background: isSelected ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                    border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '15px' }}>{item.name}</div>
+                    <span className={`admin-badge badge-${item.status}`}>
+                      {item.status === 'new' ? 'Mới' : item.status === 'read' ? 'Đã xem' : 'Đã phản hồi'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#a5b4fc', marginBottom: '6px' }}>{item.service}</div>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.message}
+                  </p>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>{item.created_at}</div>
                 </div>
-                <div style={{ fontSize: '13px', color: '#818cf8', marginBottom: '6px' }}>{item.service}</div>
-                <p style={{ fontSize: '13px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.message}
-                </p>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>{item.created_at}</div>
-              </div>
-            )
-          })}
+              )
+            })
+          )}
         </div>
 
         {/* Right: Detail View */}
@@ -148,7 +203,7 @@ export default function InquiriesPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{selectedInquiry.name}</h2>
-                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Gửi lúc: {selectedInquiry.created_at}</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thời gian: {selectedInquiry.created_at}</div>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
@@ -185,7 +240,7 @@ export default function InquiriesPage() {
             {/* Contact details */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
               <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Email</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Email của khách</div>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '4px' }}>
                   <a href={`mailto:${selectedInquiry.email}`} style={{ color: '#818cf8', textDecoration: 'none' }}>
                     {selectedInquiry.email}
@@ -194,10 +249,10 @@ export default function InquiriesPage() {
               </div>
 
               <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Số điện thoại</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Số điện thoại / Zalo</div>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '4px' }}>
                   <a href={`tel:${selectedInquiry.phone}`} style={{ color: '#10b981', textDecoration: 'none' }}>
-                    {selectedInquiry.phone || 'Chưa cung cấp'}
+                    {selectedInquiry.phone}
                   </a>
                 </div>
               </div>
@@ -210,7 +265,7 @@ export default function InquiriesPage() {
               </div>
 
               <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Mức ngân sách</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ngân sách dự kiến</div>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '4px', color: '#fbbf24' }}>
                   {selectedInquiry.budget}
                 </div>
@@ -220,7 +275,7 @@ export default function InquiriesPage() {
             {/* Message Body */}
             <div>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                Nội dung yêu cầu từ khách:
+                Chi tiết yêu cầu của khách:
               </div>
               <div
                 style={{
@@ -239,12 +294,12 @@ export default function InquiriesPage() {
             {/* Quick Actions */}
             <div style={{ display: 'flex', gap: '12px', paddingTop: '10px' }}>
               <a
-                href={`mailto:${selectedInquiry.email}?subject=BizAI - Phản hồi yêu cầu tư vấn của bạn`}
+                href={`mailto:${selectedInquiry.email}?subject=BizAI - Trao đổi yêu cầu dự án`}
                 className="btn-admin"
               >
-                <Mail size={16} /> Gửi Email Trực Tiếp Cho Khách
+                <Mail size={16} /> Gửi Email Cho Khách
               </a>
-              {selectedInquiry.phone && (
+              {selectedInquiry.phone && selectedInquiry.phone !== 'Chưa cung cấp' && (
                 <a
                   href={`https://zalo.me/${selectedInquiry.phone.replace(/[^0-9]/g, '')}`}
                   target="_blank"
@@ -263,7 +318,7 @@ export default function InquiriesPage() {
                     textDecoration: 'none',
                   }}
                 >
-                  <MessageSquare size={16} /> Mở Nhắn Tin Zalo
+                  <MessageSquare size={16} /> Nhắn Tin Zalo
                 </a>
               )}
             </div>

@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import FloatingChatWidget from "@/components/FloatingChatWidget";
 
 export const metadata: Metadata = {
   title: {
-    default: "BizAI Portfolio — Giải Pháp Công Nghệ Cho Doanh Nghiệp",
-    template: "%s | BizAI Portfolio",
+    default: "BizAI — Giải Pháp Kiến Trúc Phần Mềm & Trợ Lý AI 24/7",
+    template: "%s | BizAI",
   },
   description:
-    "Chuyên gia phát triển phần mềm, website và ứng dụng di động. Tư vấn miễn phí qua AI Chat 24/7. Xem portfolio và bảng giá dịch vụ.",
-  keywords: ["portfolio", "freelancer", "web development", "AI", "software"],
-  openGraph: {
-    type: "website",
-    locale: "vi_VN",
-  },
+    "Chuyên gia phát triển phần mềm, website cao cấp và ứng dụng di động. Tích hợp trợ lý AI tư vấn và báo giá tự động 24/7.",
+  keywords: ["bizai", "web development", "saas", "ai consultant", "nextjs"],
 };
 
 export default function RootLayout({
@@ -22,7 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body>
+        {children}
+        <FloatingChatWidget />
+      </body>
     </html>
   );
 }

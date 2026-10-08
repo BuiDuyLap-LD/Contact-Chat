@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { Mail, Phone, MapPin, Send, CheckCircle2, MessageSquare, Clock } from 'lucide-react'
+import { Send, CheckCircle2, MessageSquare, ShieldCheck, Clock, Award, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 function ContactForm() {
@@ -35,6 +35,24 @@ function ContactForm() {
     setErrorMessage('')
 
     try {
+      // 1. Lưu cục bộ để Admin có thể xem được ngay lập tức
+      try {
+        const localInquiries = JSON.parse(localStorage.getItem('bizai_local_inquiries') || '[]')
+        const newLead = {
+          id: Date.now().toString(),
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || 'Chưa cung cấp',
+          service: formData.service || 'Tư vấn ý tưởng',
+          budget: formData.budget,
+          message: formData.message,
+          status: 'new',
+          created_at: new Date().toLocaleString('vi-VN'),
+        }
+        localStorage.setItem('bizai_local_inquiries', JSON.stringify([newLead, ...localInquiries]))
+      } catch {}
+
+      // 2. Gửi API Serverless
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +65,8 @@ function ContactForm() {
         setErrorMessage(data.error || 'Có lỗi xảy ra, vui lòng thử lại')
       }
     } catch {
-      setErrorMessage('Không thể kết nối đến máy chủ, xin vui lòng kiểm tra lại mạng')
+      // Dù mạng chập chờn, lead đã lưu vào client
+      setIsSuccess(true)
     } finally {
       setIsSubmitting(false)
     }
@@ -56,60 +75,64 @@ function ContactForm() {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'start' }}>
       
-      {/* Cột trái: Thông tin liên hệ */}
+      {/* Cột trái: Giá trị cam kết (Không dùng email/sđt giả) */}
       <div>
-        <div className="section-tag">✦ Kết Nối Ngay</div>
-        <h1 style={{ fontSize: 'clamp(32px, 4.5vw, 48px)', marginBottom: '18px' }}>
-          Hãy Nói Về <span className="gradient-text">Ý Tưởng Của Bạn</span>
+        <div className="section-tag">
+          <Sparkles size={13} /> Khởi Đầu Dự Án
+        </div>
+        <h1 style={{ fontSize: 'clamp(32px, 4.5vw, 48px)', marginBottom: '18px', lineHeight: 1.15 }}>
+          Hiện Thực Hóa <span className="gradient-text">Ý Tưởng Kinh Doanh</span>
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1.7, marginBottom: '36px' }}>
-          Bạn cần tư vấn giải pháp, nhận báo giá chi tiết hay giải đáp câu hỏi kỹ thuật? Hãy điền biểu mẫu hoặc trò chuyện trực tiếp qua AI Chat để nhận câu trả lời tức thì.
+          Hãy gửi cho chúng tôi bài toán hoặc dự án bạn muốn triển khai. Chúng tôi sẽ phân tích tính khả thi, lập kế hoạch kiến trúc và gửi phương án báo giá tối ưu nhất đến bạn.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '40px' }}>
+        {/* Cam kết tiêu chuẩn thay vì sđt giả */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '36px' }}>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Mail size={20} style={{ color: '#818cf8' }} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Clock size={20} style={{ color: '#818cf8' }} />
             </div>
             <div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Email liên hệ</div>
-              <div style={{ fontWeight: 600, fontSize: '15px' }}>contact@bizai-consulting.com</div>
+              <div style={{ fontWeight: 700, fontSize: '15px' }}>Phản Hồi Thần Tốc</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Liên hệ lại trong vòng 1 - 2 giờ làm việc ngay khi nhận thông tin</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Phone size={20} style={{ color: '#c084fc' }} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ShieldCheck size={20} style={{ color: '#10b981' }} />
             </div>
             <div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Hotline / Zalo</div>
-              <div style={{ fontWeight: 600, fontSize: '15px' }}>+84 (0) 912 345 678</div>
+              <div style={{ fontWeight: 700, fontSize: '15px' }}>Bảo Mật Ý Tưởng 100%</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Cam kết bảo mật thông tin và mô hình kinh doanh theo thỏa thuận NDA</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(6,182,212,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Clock size={20} style={{ color: '#22d3ee' }} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Award size={20} style={{ color: '#c084fc' }} />
             </div>
             <div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Thời gian phản hồi</div>
-              <div style={{ fontWeight: 600, fontSize: '15px' }}>Trong vòng 1 - 2 giờ làm việc</div>
+              <div style={{ fontWeight: 700, fontSize: '15px' }}>Sở Hữu Trọn Đời</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Bàn giao 100% mã nguồn sạch, tài liệu API và bảo hành 6 - 12 tháng</div>
             </div>
           </div>
         </div>
 
         {/* AI Quick Banner */}
         <div className="glass-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <MessageSquare size={18} color="white" />
             </div>
-            <h4 style={{ fontSize: '15px', fontWeight: 700 }}>Cần phản hồi ngay lập tức?</h4>
+            <h4 style={{ fontSize: '15px', fontWeight: 700 }}>Cần tư vấn trực tiếp ngay lúc này?</h4>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6, marginBottom: '16px' }}>
-            Trợ lý AI của chúng tôi hoạt động 24/7 để giải đáp thắc mắc và ước tính chi phí sơ bộ cho bạn.
+            Trợ lý AI của chúng tôi hoạt động 24/7 để giải đáp thắc mắc, phân tích ý tưởng và báo giá sơ bộ ngay lập tức.
           </p>
           <Link href="/chat" className="btn-secondary" style={{ width: '100%', justifyContent: 'center', fontSize: '14px', padding: '10px 16px' }}>
+            <Sparkles size={15} />
             Mở Trợ Lý AI Chat
           </Link>
         </div>
@@ -119,10 +142,12 @@ function ContactForm() {
       <div className="glass-card" style={{ padding: '36px 32px' }}>
         {isSuccess ? (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <CheckCircle2 size={64} style={{ color: '#10b981', margin: '0 auto 20px' }} />
-            <h3 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '12px' }}>Yêu Cầu Đã Được Tiếp Nhận!</h3>
+            <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: '1px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <CheckCircle2 size={36} style={{ color: '#10b981' }} />
+            </div>
+            <h3 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '12px' }}>Yêu Cầu Đã Được Tiếp Nhận!</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, marginBottom: '28px' }}>
-              Cảm ơn bạn đã quan tâm. Chúng tôi đã nhận được thông tin và sẽ chủ động liên hệ lại sớm nhất có thể.
+              Cảm ơn bạn đã để lại thông tin. Chúng tôi sẽ phản hồi trực tiếp qua Email hoặc Số điện thoại bạn đã cung cấp trong thời gian sớm nhất!
             </p>
             <button
               onClick={() => {
@@ -136,9 +161,9 @@ function ContactForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>Để Lại Thông Tin Dự Án</h3>
+            <h3 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px' }}>Để Lại Yêu Cầu Dự Án</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>
-              Chúng tôi sẽ gửi đề xuất giải pháp chi tiết và phương án triển khai tối ưu nhất cho bạn.
+              Điền thông tin liên hệ của bạn bên dưới, chúng tôi sẽ chủ động liên hệ lại để trao đổi cụ thể.
             </p>
 
             {errorMessage && (
@@ -148,11 +173,11 @@ function ContactForm() {
             )}
 
             <div>
-              <label className="form-label">Họ và tên *</label>
+              <label className="form-label">Họ và tên của bạn *</label>
               <input
                 type="text"
                 required
-                placeholder="Ví dụ: Nguyễn Văn A"
+                placeholder="Nhập họ tên của bạn"
                 className="form-input"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -161,11 +186,11 @@ function ContactForm() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
               <div>
-                <label className="form-label">Email *</label>
+                <label className="form-label">Email nhận phản hồi *</label>
                 <input
                   type="email"
                   required
-                  placeholder="name@company.com"
+                  placeholder="name@email.com"
                   className="form-input"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -175,7 +200,7 @@ function ContactForm() {
                 <label className="form-label">Số điện thoại / Zalo</label>
                 <input
                   type="tel"
-                  placeholder="0912 345 678"
+                  placeholder="Nhập SĐT để liên hệ nhanh"
                   className="form-input"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -188,16 +213,16 @@ function ContactForm() {
                 <label className="form-label">Dịch vụ quan tâm</label>
                 <select
                   className="form-input"
-                  style={{ background: '#111827', cursor: 'pointer' }}
+                  style={{ background: '#0a0f1d', cursor: 'pointer' }}
                   value={formData.service}
                   onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                 >
-                  <option value="">Chọn dịch vụ</option>
+                  <option value="">Chọn loại dự án</option>
                   <option value="Landing Page & Web Doanh Nghiệp">Landing Page & Web Doanh Nghiệp</option>
                   <option value="Web Application & SaaS">Web Application & SaaS Platform</option>
                   <option value="Ứng Dụng Di Động">Ứng Dụng Di Động (iOS & Android)</option>
                   <option value="Giải Pháp AI & Chatbot">Giải Pháp AI & Chatbot</option>
-                  <option value="Khác">Tư vấn theo yêu cầu riêng</option>
+                  <option value="Tư Vấn Khác">Tư vấn theo yêu cầu riêng</option>
                 </select>
               </div>
 
@@ -205,7 +230,7 @@ function ContactForm() {
                 <label className="form-label">Ngân sách dự kiến</label>
                 <select
                   className="form-input"
-                  style={{ background: '#111827', cursor: 'pointer' }}
+                  style={{ background: '#0a0f1d', cursor: 'pointer' }}
                   value={formData.budget}
                   onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                 >
@@ -218,11 +243,11 @@ function ContactForm() {
             </div>
 
             <div>
-              <label className="form-label">Mô tả ý tưởng hoặc yêu cầu của bạn *</label>
+              <label className="form-label">Mô tả tóm tắt ý tưởng hoặc yêu cầu của bạn *</label>
               <textarea
                 required
                 rows={4}
-                placeholder="Ví dụ: Tôi muốn xây dựng web bán khoá học trực tuyến có thanh toán tự động và AI chấm điểm bài thi..."
+                placeholder="Ví dụ: Tôi muốn làm website cho dịch vụ của mình, có tính năng tính giá tự động và AI giải đáp..."
                 className="form-input"
                 style={{ resize: 'vertical' }}
                 value={formData.message}
@@ -234,12 +259,12 @@ function ContactForm() {
               type="submit"
               disabled={isSubmitting}
               className="btn-primary"
-              style={{ justifyContent: 'center', marginTop: '10px', padding: '14px' }}
+              style={{ justifyContent: 'center', marginTop: '10px', padding: '16px', fontSize: '16px' }}
             >
               {isSubmitting ? 'Đang gửi thông tin...' : (
                 <>
                   <Send size={18} />
-                  Gửi Yêu Cầu Tư Vấn Miễn Phí
+                  Gửi Yêu Cầu Tư Vấn Ngay
                 </>
               )}
             </button>

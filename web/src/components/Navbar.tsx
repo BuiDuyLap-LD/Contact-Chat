@@ -114,9 +114,11 @@ export default function Navbar() {
         {/* Actions: Admin & Chat CTA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Admin link */}
-          <Link
-            href="/admin"
-            title="Truy cập bảng điều khiển quản trị"
+          <a
+            href="https://contact-chat-brhw.vercel.app/"
+            target="_blank"
+            rel="noreferrer"
+            title="Truy cập trang quản trị hệ thống"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -135,7 +137,7 @@ export default function Navbar() {
           >
             <Shield size={14} style={{ color: '#a855f7' }} />
             Quản Trị
-          </Link>
+          </a>
 
           <Link
             href="/chat"
@@ -209,9 +211,10 @@ export default function Navbar() {
               <MessageSquare size={16} />
               Hỏi Đáp AI
             </Link>
-            <Link
-              href="/admin"
-              onClick={() => setIsOpen(false)}
+            <a
+              href="https://contact-chat-brhw.vercel.app/"
+              target="_blank"
+              rel="noreferrer"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -226,7 +229,7 @@ export default function Navbar() {
               }}
             >
               <Shield size={16} />
-            </Link>
+            </a>
           </div>
         </div>
       )}

@@ -18,7 +18,7 @@ export default function AdminSidebar() {
     <aside
       style={{
         width: '260px',
-        background: 'var(--bg-surface)',
+        background: '#0a0f1d',
         borderRight: '1px solid var(--border)',
         padding: '24px 16px',
         display: 'flex',
@@ -81,14 +81,9 @@ export default function AdminSidebar() {
       {/* Quick link to Web */}
       <div style={{ paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
         <a
-          href="/"
-          onClick={(e) => {
-            // Nếu chạy trên localhost nhảy về 3000, nếu trên Vercel mở trang web chính
-            if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-              window.open('http://localhost:3000', '_blank')
-              e.preventDefault()
-            }
-          }}
+          href="https://contact-chat.vercel.app/"
+          target="_blank"
+          rel="noreferrer"
           style={{
             display: 'flex',
             alignItems: 'center',
